@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f3f0e8;
+  --bg-accent: #e7efe8;
+  --ink: #1c2a22;
+  --muted: #5c6b62;
+  --line: #c9d2cb;
+  --brand: #1f6b4a;
+  --brand-dark: #155239;
+  --card: #fffcf7;
+  --danger: #a33b2b;
+  --warn: #9a6b12;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 12% 8%, #dcefe3 0%, transparent 42%),
+    radial-gradient(circle at 88% 0%, #f0e4d2 0%, transparent 36%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-accent) 100%);
+  font-family: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.panel {
+  background: color-mix(in srgb, var(--card) 92%, white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(28, 42, 34, 0.05);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--brand);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--brand-dark);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.btn-ghost:hover {
+  background: rgba(31, 107, 74, 0.06);
+}
+
+.btn-danger {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--danger) 40%, white);
+  color: var(--danger);
+}
+
+.input,
+.select,
+.file {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  color: inherit;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.7rem 0.55rem;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+  vertical-align: top;
+}
+
+.table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  background: white;
+}
+
+.badge-ok {
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 35%, white);
+  background: color-mix(in srgb, var(--brand) 8%, white);
+}
+
+.badge-warn {
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 35%, white);
+  background: color-mix(in srgb, var(--warn) 8%, white);
+}
+
+.badge-danger {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, white);
+  background: color-mix(in srgb, var(--danger) 8%, white);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.nav-link {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  color: var(--muted);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 10%, white);
+}

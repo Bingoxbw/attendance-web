@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Member {
+  id           String   @id @default(cuid())
+  name         String
+  yikatong     String?
+  studentId    String?
+  gender       String?
+  phone        String?
+  partyStatus  String?
+  advisor      String?
+  remark       String?
+  roleTag      String?
+  isActivist   Boolean  @default(false)
+  needsFix     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  attendanceRecords AttendanceRecord[]
+
+  @@index([studentId])
+  @@index([yikatong])
+  @@index([name])
+}
+
+model Activity {
+  id           String    @id @default(cuid())
+  title        String
+  checkInCode  String?
+  createdAtSrc String?
+  startAt      DateTime?
+  endAt        DateTime?
+  address      String?
+  sourceFile   String?
+  sourceApp    String?
+  importedAt   DateTime  @default(now())
+
+  records AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id              String    @id @default(cuid())
+  activityId      String
+  rawName         String
+  rawStudentId    String?
+  rawBranchName   String?
+  signedAt        DateTime?
+  isNewPartyMember Boolean?
+  memberId        String?
+  matchMethod     String    @default("unmatched")
+  // xuehao | yikatong | name | manual | unmatched | ambiguous
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  member   Member?  @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  @@index([activityId])
+  @@index([memberId])
+}
