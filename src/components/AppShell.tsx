@@ -9,6 +9,8 @@ const LINKS = [
   { href: "/members", label: "成员" },
   { href: "/activities", label: "活动" },
   { href: "/stats", label: "统计" },
+  { href: "/secretaries", label: "支书账号" },
+  { href: "/qa", label: "问答" },
   { href: "/guide", label: "说明" },
 ];
 

@@ -1,4 +1,5 @@
 import ExcelJS from "exceljs";
+import { DEFAULT_BRANCH_NAME } from "@/lib/branch";
 import { cellToString } from "./utils";
 
 export type ParsedMember = {
@@ -11,6 +12,7 @@ export type ParsedMember = {
   advisor: string | null;
   remark: string | null;
   roleTag: string | null;
+  branchName: string;
   isActivist: boolean;
   needsFix: boolean;
 };
@@ -53,6 +55,7 @@ export async function parseMembersWorkbook(
         else if (v.includes("党员身份") || v === "身份") col.partyStatus = idx;
         else if (v.includes("导师")) col.advisor = idx;
         else if (v.includes("备注")) col.remark = idx;
+        else if (v.includes("党支部") || v === "支部") col.branchName = idx;
       });
       break;
     }
@@ -100,6 +103,11 @@ export async function parseMembersWorkbook(
       remarkNorm === "发展" ||
       (get(col.partyStatus) || "").includes("积极");
 
+    const branchFromCol = get(col.branchName) || "";
+    const branchFromSheet = sheet.name && !/sheet|工作表/i.test(sheet.name)
+      ? sheet.name.trim()
+      : "";
+
     members.push({
       name,
       yikatong,
@@ -110,6 +118,7 @@ export async function parseMembersWorkbook(
       advisor: get(col.advisor) || null,
       remark: remarkNorm,
       roleTag,
+      branchName: branchFromCol || branchFromSheet || DEFAULT_BRANCH_NAME,
       isActivist,
       needsFix: !studentId && !yikatong,
     });

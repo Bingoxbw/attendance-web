@@ -5,6 +5,7 @@ export type MemberForStats = {
   isActivist: boolean;
   partyStatus: string | null;
   remark: string | null;
+  branchName?: string | null;
 };
 
 export type ActivityPresence = {
@@ -75,6 +76,53 @@ export function calcCumulativeBranchRate(
     expectedPersonTimes,
     rate: expectedPersonTimes === 0 ? 0 : presentPersonTimes / expectedPersonTimes,
   };
+}
+
+/** Per organizational branch (党支部), cumulative person-times over all activities. */
+export function calcPerBranchRates(
+  members: MemberForStats[],
+  activities: ActivityPresence[],
+  includeActivists: boolean
+) {
+  const countable = filterCountableMembers(members, includeActivists);
+  const byBranch = new Map<string, MemberForStats[]>();
+  for (const m of countable) {
+    const key = (m.branchName || "").trim() || "未分支部";
+    if (!byBranch.has(key)) byBranch.set(key, []);
+    byBranch.get(key)!.push(m);
+  }
+
+  return [...byBranch.entries()]
+    .map(([branchName, list]) => {
+      const cumulative = calcCumulativeBranchRate(
+        list,
+        activities,
+        true // already filtered
+      );
+      const latest = activities[activities.length - 1];
+      let latestPresent = 0;
+      const latestTotal = list.length;
+      if (latest) {
+        latestPresent = list.filter((m) =>
+          latest.presentMemberIds.has(m.id)
+        ).length;
+      }
+      return {
+        branchName,
+        memberCount: list.length,
+        presentPersonTimes: cumulative.presentPersonTimes,
+        expectedPersonTimes: cumulative.expectedPersonTimes,
+        rate: cumulative.rate,
+        rateLabel: formatPercent(cumulative.rate),
+        latestPresent,
+        latestTotal,
+        latestRateLabel:
+          latestTotal === 0
+            ? "—"
+            : formatPercent(latestPresent / latestTotal),
+      };
+    })
+    .sort((a, b) => a.branchName.localeCompare(b.branchName, "zh"));
 }
 
 export function formatPercent(rate: number): string {

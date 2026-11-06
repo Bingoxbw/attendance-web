@@ -18,6 +18,7 @@ model Member {
   advisor      String?
   remark       String?
   roleTag      String?
+  branchName   String   @default("通信研究生第九党支部")
   isActivist   Boolean  @default(false)
   needsFix     Boolean  @default(false)
   createdAt    DateTime @default(now())
@@ -28,6 +29,7 @@ model Member {
   @@index([studentId])
   @@index([yikatong])
   @@index([name])
+  @@index([branchName])
 }
 
 model Activity {
@@ -62,4 +64,58 @@ model AttendanceRecord {
 
   @@index([activityId])
   @@index([memberId])
+}
+
+model SecretaryAccount {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  displayName  String
+  branchName   String
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([branchName])
+}
+
+model TutorialDocument {
+  id           String   @id @default(cuid())
+  title        String
+  category     String
+  relativePath String   @unique
+  ext          String
+  size         Int      @default(0)
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
+
+  @@index([category])
+}
+
+model QaThread {
+  id                String   @id @default(cuid())
+  title             String
+  body              String
+  authorRole        String
+  authorName        String
+  authorSecretaryId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  replies QaReply[]
+}
+
+model QaReply {
+  id                String   @id @default(cuid())
+  threadId          String
+  body              String
+  authorRole        String
+  authorName        String
+  authorSecretaryId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  thread QaThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId])
 }

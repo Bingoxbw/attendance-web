@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import {
   calcCumulativeBranchRate,
   calcPersonalRates,
+  calcPerBranchRates,
   calcBranchRate,
   filterCountableMembers,
   formatPercent,
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest) {
     presence,
     includeActivists
   );
+  const perBranch = calcPerBranchRates(members, presence, includeActivists);
 
   const perActivity = activities.map((a) => {
     const presentIds = new Set(
@@ -66,6 +68,26 @@ export async function GET(req: NextRequest) {
       ]);
     }
 
+    const sBranch = wb.addWorksheet("支部到达率");
+    sBranch.addRow([
+      "党支部",
+      "应计人数",
+      "最近一次到/应",
+      "最近一次到达率",
+      "累计人次到/应",
+      "累计到达率",
+    ]);
+    for (const b of perBranch) {
+      sBranch.addRow([
+        b.branchName,
+        b.memberCount,
+        `${b.latestPresent}/${b.latestTotal}`,
+        b.latestRateLabel,
+        `${b.presentPersonTimes}/${b.expectedPersonTimes}`,
+        b.rateLabel,
+      ]);
+    }
+
     const s2 = wb.addWorksheet("活动到达率");
     s2.addRow(["活动", "已到", "应到", "缺席", "到达率"]);
     for (const a of perActivity) {
@@ -93,6 +115,7 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     personal,
+    perBranch,
     perActivity,
     cumulative: {
       ...cumulative,

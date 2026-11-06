@@ -6,6 +6,8 @@ const basePath = process.env.BASE_PATH || "";
 const nextConfig: NextConfig = {
   output: "standalone",
   ...(basePath ? { basePath } : {}),
+  // Hide Next.js "N" dev indicator (not Neon)
+  devIndicators: false,
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },

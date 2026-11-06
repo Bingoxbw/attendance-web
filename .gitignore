@@ -36,6 +36,10 @@ yarn-error.log*
 .env.*.local
 !.env.example
 
+# tutorial binaries (keep README)
+/content/tutorials/**
+!/content/tutorials/README.md
+
 # prisma
 /prisma/*.db
 /prisma/*.db-journal

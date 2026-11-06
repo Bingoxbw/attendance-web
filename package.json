@@ -10,6 +10,8 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "verify:samples": "tsx scripts/verify-samples.ts",
+    "tutorials:index": "tsx scripts/index-tutorials.ts",
+    "seed:secretary": "tsx scripts/seed-secretary.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

@@ -24,6 +24,16 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
             : null
           : undefined,
       remark: body.remark !== undefined ? body.remark : undefined,
+      branchName:
+        body.branchName !== undefined
+          ? String(body.branchName || "通信研究生第九党支部")
+          : undefined,
+      partyStatus:
+        body.partyStatus !== undefined
+          ? body.partyStatus
+            ? String(body.partyStatus)
+            : null
+          : undefined,
       isActivist:
         body.isActivist !== undefined ? Boolean(body.isActivist) : undefined,
       needsFix:

@@ -12,6 +12,16 @@ type Stats = {
     total: number;
     rate: number;
   }[];
+  perBranch: {
+    branchName: string;
+    memberCount: number;
+    presentPersonTimes: number;
+    expectedPersonTimes: number;
+    rateLabel: string;
+    latestPresent: number;
+    latestTotal: number;
+    latestRateLabel: string;
+  }[];
   perActivity: {
     activityId: string;
     title: string;
@@ -52,7 +62,7 @@ export default function StatsPage() {
           <div>
             <h2 className="text-xl font-semibold">到达率统计</h2>
             <p className="muted mt-1 text-sm">
-              个人到达率 = 已到活动数 / 全部已导入活动数；支部累计按人次口径。
+              个人按活动次数；支部到达率以党支部为单位（如通信研究生第九党支部），累计按人次。
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -102,6 +112,46 @@ export default function StatsPage() {
         ) : null}
       </section>
 
+      <section className="panel mt-6 overflow-x-auto p-5">
+        <h3 className="font-semibold">各支部到达率</h3>
+        <p className="muted mt-1 text-sm">
+          以党支部为统计单位；「最近一次」为最新导入活动在该支部的到课情况。
+        </p>
+        <table className="table mt-3">
+          <thead>
+            <tr>
+              <th>党支部</th>
+              <th>应计人数</th>
+              <th>最近一次到/应</th>
+              <th>最近一次到达率</th>
+              <th>累计人次到/应</th>
+              <th>累计到达率</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(stats?.perBranch || []).map((b) => (
+              <tr key={b.branchName}>
+                <td className="font-medium">{b.branchName}</td>
+                <td>{b.memberCount}</td>
+                <td>
+                  {b.latestPresent}/{b.latestTotal}
+                </td>
+                <td>{b.latestRateLabel}</td>
+                <td>
+                  {b.presentPersonTimes}/{b.expectedPersonTimes}
+                </td>
+                <td className="font-semibold text-[var(--brand)]">
+                  {b.rateLabel}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!stats?.perBranch?.length ? (
+          <p className="muted mt-3 text-sm">暂无支部数据，请先导入成员。</p>
+        ) : null}
+      </section>
+
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="panel overflow-x-auto p-5">
           <h3 className="font-semibold">个人到达率</h3>
@@ -133,7 +183,7 @@ export default function StatsPage() {
         </section>
 
         <section className="panel overflow-x-auto p-5">
-          <h3 className="font-semibold">各次活动支部到达率</h3>
+          <h3 className="font-semibold">各次活动到达率（全体应计成员）</h3>
           <table className="table mt-3">
             <thead>
               <tr>

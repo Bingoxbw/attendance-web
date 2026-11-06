@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
       advisor: m.advisor,
       remark: m.remark,
       roleTag: m.roleTag,
+      branchName: m.branchName,
       isActivist: m.isActivist,
       needsFix: m.needsFix,
     })),
@@ -64,7 +65,11 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   const members = await prisma.member.findMany({
-    orderBy: [{ isActivist: "asc" }, { name: "asc" }],
+    orderBy: [
+      { branchName: "asc" },
+      { isActivist: "asc" },
+      { name: "asc" },
+    ],
   });
   return NextResponse.json({ members });
 }

@@ -1,7 +1,17 @@
 import { cookies } from "next/headers";
 import { COOKIE_PATH } from "@/lib/paths";
 
-const COOKIE_NAME = "attendance_session";
+export const COOKIE_NAME = "attendance_session";
+
+export type SessionRole = "admin" | "secretary";
+
+export type SessionPayload = {
+  role: SessionRole;
+  exp: number;
+  secretaryId?: string;
+  branchName?: string;
+  displayName?: string;
+};
 
 function toBase64Url(bytes: ArrayBuffer | Uint8Array): string {
   const arr = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
@@ -24,11 +34,16 @@ async function getKey(secret: string) {
   );
 }
 
-export async function createSession() {
+export async function createSession(
+  input: Omit<SessionPayload, "exp"> & { exp?: number }
+) {
   const secret = process.env.AUTH_SECRET || "dev-secret";
-  const payload = {
-    role: "admin",
-    exp: Date.now() + 7 * 24 * 60 * 60 * 1000,
+  const payload: SessionPayload = {
+    role: input.role,
+    exp: input.exp ?? Date.now() + 7 * 24 * 60 * 60 * 1000,
+    secretaryId: input.secretaryId,
+    branchName: input.branchName,
+    displayName: input.displayName,
   };
   const payloadB64 = fromUtf8ToBase64Url(JSON.stringify(payload));
   const key = await getKey(secret);
@@ -51,7 +66,6 @@ export async function createSession() {
 
 export async function destroySession() {
   const jar = await cookies();
-  // Must clear with the same path used when setting, or logout keeps the cookie.
   jar.set(COOKIE_NAME, "", {
     httpOnly: true,
     sameSite: "lax",
@@ -61,14 +75,11 @@ export async function destroySession() {
   });
 }
 
-export async function isAuthenticated(): Promise<boolean> {
-  const jar = await cookies();
-  const token = jar.get(COOKIE_NAME)?.value;
-  if (!token) return false;
+async function parseToken(token: string): Promise<SessionPayload | null> {
   try {
     const secret = process.env.AUTH_SECRET || "dev-secret";
     const [payloadB64, sigB64] = token.split(".");
-    if (!payloadB64 || !sigB64) return false;
+    if (!payloadB64 || !sigB64) return null;
     const key = await getKey(secret);
     const sig = Uint8Array.from(
       atob(sigB64.replace(/-/g, "+").replace(/_/g, "/")),
@@ -80,19 +91,44 @@ export async function isAuthenticated(): Promise<boolean> {
       sig,
       new TextEncoder().encode(payloadB64)
     );
-    if (!ok) return false;
+    if (!ok) return null;
     const payload = JSON.parse(
       atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"))
-    );
-    return payload.role === "admin" && payload.exp > Date.now();
+    ) as SessionPayload;
+    if (!payload.exp || Date.now() > payload.exp) return null;
+    if (payload.role !== "admin" && payload.role !== "secretary") return null;
+    return payload;
   } catch {
-    return false;
+    return null;
   }
 }
 
-export function verifyPassword(password: string): boolean {
+export async function getSession(): Promise<SessionPayload | null> {
+  const jar = await cookies();
+  const token = jar.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+  return parseToken(token);
+}
+
+export async function isAuthenticated(): Promise<boolean> {
+  return (await getSession()) !== null;
+}
+
+export async function requireSession(
+  role?: SessionRole
+): Promise<SessionPayload> {
+  const session = await getSession();
+  if (!session) throw new Error("UNAUTHORIZED");
+  if (role && session.role !== role) throw new Error("FORBIDDEN");
+  return session;
+}
+
+export function verifyAdminPassword(password: string): boolean {
   const expected = process.env.ADMIN_PASSWORD || "admin123";
   return password === expected;
 }
 
-export { COOKIE_NAME };
+/** @deprecated use verifyAdminPassword */
+export function verifyPassword(password: string): boolean {
+  return verifyAdminPassword(password);
+}
