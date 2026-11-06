@@ -19,7 +19,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     await fetch(withBase("/api/auth/logout"), { method: "POST" });
-    window.location.href = withBase("/login");
+    window.location.href = withBase(`/login?t=${Date.now()}`);
   }
 
   return (

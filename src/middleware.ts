@@ -58,6 +58,15 @@ function isAdminPath(pathname: string): boolean {
   return true;
 }
 
+function withNoStore(res: NextResponse) {
+  res.headers.set(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, max-age=0"
+  );
+  res.headers.set("Pragma", "no-cache");
+  return res;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -105,13 +114,15 @@ export async function middleware(request: NextRequest) {
   if (!session && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    return NextResponse.redirect(url);
+    url.search = "";
+    return withNoStore(NextResponse.redirect(url));
   }
 
   if (session && pathname === "/login") {
     const url = request.nextUrl.clone();
     url.pathname = session.role === "secretary" ? "/secretary" : "/";
-    return NextResponse.redirect(url);
+    url.search = "";
+    return withNoStore(NextResponse.redirect(url));
   }
 
   if (session?.role === "secretary" && isAdminPath(pathname) && !isPublic) {
@@ -121,11 +132,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (session?.role === "admin" && pathname.startsWith("/secretary")) {
-    // Admin may browse secretary UI if needed; allow read of tutorials via shared routes only.
-    // Keep secretary pages secretary-only.
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
+  }
+
+  if (pathname === "/login") {
+    return withNoStore(NextResponse.next());
   }
 
   return NextResponse.next();
