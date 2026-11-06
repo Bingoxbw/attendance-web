@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireApiSession } from "@/lib/api-auth";
+import { secretaryActivityWhere } from "@/lib/activity-scope";
 import { prisma } from "@/lib/db";
 import {
   calcBranchRate,
@@ -15,6 +16,7 @@ export async function GET() {
   const [members, activities] = await Promise.all([
     prisma.member.findMany({ where: { branchName } }),
     prisma.activity.findMany({
+      where: secretaryActivityWhere(branchName),
       orderBy: { importedAt: "desc" },
       include: { records: true },
     }),
@@ -32,6 +34,8 @@ export async function GET() {
       title: a.title,
       importedAt: a.importedAt,
       startAt: a.startAt,
+      scope: a.branchName ? "本支部" : "共享",
+      branchOnly: Boolean(a.branchName),
       present: branch.present,
       total: branch.total,
       rateLabel: formatPercent(branch.rate),

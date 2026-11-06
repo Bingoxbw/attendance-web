@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiSession } from "@/lib/api-auth";
+import { canSecretaryAccessActivity } from "@/lib/activity-scope";
 import { prisma } from "@/lib/db";
 import {
   calcBranchRate,
@@ -32,6 +33,10 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 
   if (!activity) {
     return NextResponse.json({ error: "活动不存在" }, { status: 404 });
+  }
+
+  if (!canSecretaryAccessActivity(activity.branchName, branchName)) {
+    return NextResponse.json({ error: "无权查看该活动" }, { status: 403 });
   }
 
   const countable = filterCountableMembers(members, false);

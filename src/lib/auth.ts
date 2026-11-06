@@ -24,6 +24,13 @@ function fromUtf8ToBase64Url(text: string): string {
   return toBase64Url(new TextEncoder().encode(text));
 }
 
+/** Decode base64url that was produced from UTF-8 bytes (atob alone breaks Chinese). */
+function fromBase64UrlToUtf8(b64url: string): string {
+  const bin = atob(b64url.replace(/-/g, "+").replace(/_/g, "/"));
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
 async function getKey(secret: string) {
   return crypto.subtle.importKey(
     "raw",
@@ -92,9 +99,7 @@ async function parseToken(token: string): Promise<SessionPayload | null> {
       new TextEncoder().encode(payloadB64)
     );
     if (!ok) return null;
-    const payload = JSON.parse(
-      atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"))
-    ) as SessionPayload;
+    const payload = JSON.parse(fromBase64UrlToUtf8(payloadB64)) as SessionPayload;
     if (!payload.exp || Date.now() > payload.exp) return null;
     if (payload.role !== "admin" && payload.role !== "secretary") return null;
     return payload;

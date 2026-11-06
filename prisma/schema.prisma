@@ -42,9 +42,13 @@ model Activity {
   address      String?
   sourceFile   String?
   sourceApp    String?
+  /// null = 全院/管理员共享；有值 = 仅该党支部可见
+  branchName   String?
   importedAt   DateTime  @default(now())
 
   records AttendanceRecord[]
+
+  @@index([branchName])
 }
 
 model AttendanceRecord {

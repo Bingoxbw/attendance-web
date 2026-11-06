@@ -34,8 +34,11 @@ async function parseSession(
     const ok = await crypto.subtle.verify("HMAC", key, sig, data);
     if (!ok) return null;
 
+    // Payload was UTF-8 encoded; atob alone would mojibake Chinese branch names.
+    const bin = atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"));
+    const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
     const payload = JSON.parse(
-      atob(payloadB64.replace(/-/g, "+").replace(/_/g, "/"))
+      new TextDecoder().decode(bytes)
     ) as SessionPayload;
     if (!payload.exp || Date.now() > payload.exp) return null;
     if (payload.role !== "admin" && payload.role !== "secretary") return null;
