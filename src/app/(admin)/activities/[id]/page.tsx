@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
+import { withBase } from "@/lib/paths";
 
 type Member = {
   id: string;
@@ -39,7 +40,9 @@ export default function ActivityDetailPage() {
 
   async function load(include = includeActivists) {
     const res = await fetch(
-      `/api/activities/${id}?includeActivists=${include ? "1" : "0"}`
+      withBase(
+        `/api/activities/${id}?includeActivists=${include ? "1" : "0"}`
+      )
     );
     if (!res.ok) return;
     setData(await res.json());
@@ -56,7 +59,7 @@ export default function ActivityDetailPage() {
   }
 
   async function markPresent(memberId: string) {
-    const res = await fetch(`/api/activities/${id}/match`, {
+    const res = await fetch(withBase(`/api/activities/${id}/match`), {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ memberId }),
@@ -68,7 +71,7 @@ export default function ActivityDetailPage() {
   }
 
   async function linkRecord(recordId: string, memberId: string | null) {
-    await fetch(`/api/activities/${id}/match`, {
+    await fetch(withBase(`/api/activities/${id}/match`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ recordId, memberId }),

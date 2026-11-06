@@ -11,20 +11,17 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [memberCount, activityCount, members, activities] = await Promise.all([
-    prisma.member.count(),
-    prisma.activity.count(),
+  const [members, allActivities] = await Promise.all([
     prisma.member.findMany(),
     prisma.activity.findMany({
       orderBy: { importedAt: "desc" },
-      take: 5,
       include: { records: true },
     }),
   ]);
 
-  const allActivities = await prisma.activity.findMany({
-    include: { records: true },
-  });
+  const memberCount = members.length;
+  const activityCount = allActivities.length;
+  const activities = allActivities.slice(0, 5);
 
   const presence = allActivities.map((a) => ({
     activityId: a.id,

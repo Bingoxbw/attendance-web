@@ -1,31 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { withBase } from "@/lib/paths";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const submitting = useRef(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (submitting.current || loading) return;
+    submitting.current = true;
     setLoading(true);
     setError("");
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    setLoading(false);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error || "登录失败");
-      return;
+    try {
+      const res = await fetch(withBase("/api/auth/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "登录失败");
+        submitting.current = false;
+        setLoading(false);
+        return;
+      }
+      // Keep button disabled until the browser leaves this page.
+      window.location.assign(withBase("/"));
+    } catch {
+      setError("网络异常，请重试");
+      submitting.current = false;
+      setLoading(false);
     }
-    router.push("/");
-    router.refresh();
   }
 
   return (
@@ -44,10 +53,15 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoFocus
+            disabled={loading}
           />
           {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-          <button className="btn btn-primary w-full" disabled={loading}>
-            {loading ? "登录中…" : "进入系统"}
+          <button
+            type="submit"
+            className="btn btn-primary w-full"
+            disabled={loading}
+          >
+            {loading ? "登录中，请稍候…" : "进入系统"}
           </button>
         </form>
       </div>

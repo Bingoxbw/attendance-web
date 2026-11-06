@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { withBase } from "@/lib/paths";
 
 type Member = {
   id: string;
@@ -23,7 +24,7 @@ export default function MembersPage() {
   const [draft, setDraft] = useState({ studentId: "", yikatong: "" });
 
   async function load() {
-    const res = await fetch("/api/members/import");
+    const res = await fetch(withBase("/api/members/import"));
     const data = await res.json();
     setMembers(data.members || []);
   }
@@ -40,7 +41,10 @@ export default function MembersPage() {
     const form = new FormData();
     form.set("file", file);
     form.set("mode", "replace");
-    const res = await fetch("/api/members/import", { method: "POST", body: form });
+    const res = await fetch(withBase("/api/members/import"), {
+      method: "POST",
+      body: form,
+    });
     const data = await res.json();
     setLoading(false);
     e.target.value = "";
@@ -55,7 +59,7 @@ export default function MembersPage() {
   }
 
   async function saveEdit(id: string) {
-    const res = await fetch(`/api/members/${id}`, {
+    const res = await fetch(withBase(`/api/members/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

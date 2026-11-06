@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { COOKIE_PATH } from "@/lib/paths";
 
 const COOKIE_NAME = "attendance_session";
 
@@ -43,14 +44,21 @@ export async function createSession() {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    path: "/",
+    path: COOKIE_PATH,
     maxAge: 60 * 60 * 24 * 7,
   });
 }
 
 export async function destroySession() {
   const jar = await cookies();
-  jar.delete(COOKIE_NAME);
+  // Must clear with the same path used when setting, or logout keeps the cookie.
+  jar.set(COOKIE_NAME, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: COOKIE_PATH,
+    maxAge: 0,
+  });
 }
 
 export async function isAuthenticated(): Promise<boolean> {

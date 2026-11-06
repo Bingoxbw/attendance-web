@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { withBase } from "@/lib/paths";
 
 const LINKS = [
   { href: "/", label: "总览" },
@@ -13,12 +14,10 @@ const LINKS = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    await fetch(withBase("/api/auth/logout"), { method: "POST" });
+    window.location.href = withBase("/login");
   }
 
   return (

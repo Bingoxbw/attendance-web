@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { withBase } from "@/lib/paths";
 
 type Activity = {
   id: string;
@@ -19,7 +20,7 @@ export default function ActivitiesPage() {
   const [loading, setLoading] = useState(false);
 
   async function load() {
-    const res = await fetch("/api/activities/import");
+    const res = await fetch(withBase("/api/activities/import"));
     const data = await res.json();
     setActivities(data.activities || []);
   }
@@ -35,7 +36,7 @@ export default function ActivitiesPage() {
     setMsg("");
     const form = new FormData();
     form.set("file", file);
-    const res = await fetch("/api/activities/import", {
+    const res = await fetch(withBase("/api/activities/import"), {
       method: "POST",
       body: form,
     });
@@ -55,7 +56,7 @@ export default function ActivitiesPage() {
 
   async function remove(id: string) {
     if (!confirm("确定删除该活动及其签到记录？")) return;
-    await fetch(`/api/activities/${id}`, { method: "DELETE" });
+    await fetch(withBase(`/api/activities/${id}`), { method: "DELETE" });
     await load();
   }
 

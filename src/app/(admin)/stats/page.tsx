@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { withBase } from "@/lib/paths";
 
 type Stats = {
   personal: {
@@ -34,7 +35,7 @@ export default function StatsPage() {
 
   async function load(include = includeActivists) {
     const res = await fetch(
-      `/api/stats/export?includeActivists=${include ? "1" : "0"}`
+      withBase(`/api/stats/export?includeActivists=${include ? "1" : "0"}`)
     );
     setStats(await res.json());
   }
@@ -68,7 +69,9 @@ export default function StatsPage() {
             </label>
             <a
               className="btn btn-primary"
-              href={`/api/stats/export?format=xlsx&includeActivists=${includeActivists ? "1" : "0"}`}
+              href={withBase(
+                `/api/stats/export?format=xlsx&includeActivists=${includeActivists ? "1" : "0"}`
+              )}
             >
               导出 Excel
             </a>
